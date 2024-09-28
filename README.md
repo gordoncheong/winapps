@@ -160,7 +160,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Access</b><br>
-            (2016, 2019, o365)<br>
+            (2016 - 2024, o365)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Microsoft_Office_Access_(2019-present).svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Microsoft Excel -->
@@ -169,7 +169,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Excel</b><br>
-            (2016, 2019, o365)<br>
+            (2016 - 2024, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Excel_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
@@ -180,7 +180,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Word</b><br>
-            (2016, 2019, o365)<br>
+            (2016 - 2024, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Word_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Microsoft OneNote -->
@@ -189,7 +189,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft OneNote</b><br>
-            (2016, 2019, o365)<br>
+            (2016 - 2024, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_OneNote_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
@@ -200,7 +200,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Outlook</b><br>
-            (2016, 2019, o365)<br>
+            (2016 - 2024, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Outlook_(2018%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Microsoft PowerPoint -->
@@ -209,7 +209,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft PowerPoint</b><br>
-            (2016, 2019, o365)<br>
+            (2016 - 2024, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_PowerPoint_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
             </td>
     </tr>
@@ -220,7 +220,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Publisher</b><br>
-            (2016, 2019, o365)<br>
+            (2016 - 2021, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Publisher_(2019-present).svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Microsoft Visio -->
@@ -229,7 +229,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Visio</b><br>
-            (Standard/Pro. 2021, Plan 2)<br>
+            (Standard/Pro. 2024, Plan 2)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Visio_(2019).svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
@@ -240,7 +240,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Project</b><br>
-            (Standard/Pro. 2021, Plan 3/5)<br>
+            (Standard/Pro. 2024, Plan 3/5)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Project_(2019–present).svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Microsoft Visual Studio -->
