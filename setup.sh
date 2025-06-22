@@ -73,7 +73,6 @@ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf" # UNIX path to the W
 readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
 
 # REMOTE DESKTOP CONFIGURATION
-readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
 readonly RDP_PORT=3389         # Port used for RDP on Windows.
 readonly DOCKER_IP="127.0.0.1" # Localhost.
 
@@ -85,17 +84,20 @@ OPT_UNINSTALL=0 # Set to '1' if the user specifies '--uninstall'.
 OPT_AOSA=0      # Set to '1' if the user specifies '--setupAllOfficiallySupportedApps'.
 
 # WINAPPS CONFIGURATION FILE
-RDP_USER=""        # Imported variable.
-RDP_PASS=""        # Imported variable.
-RDP_DOMAIN=""      # Imported variable.
-RDP_IP=""          # Imported variable.
-WAFLAVOR="docker"  # Imported variable.
-RDP_SCALE=100      # Imported variable.
-RDP_FLAGS=""       # Imported variable.
-MULTIMON="false"   # Imported variable.
-DEBUG="true"       # Imported variable.
-FREERDP_COMMAND="" # Imported variable.
-MULTI_FLAG=""      # Set based on value of $MULTIMON.
+RDP_USER=""          # Imported variable.
+RDP_PASS=""          # Imported variable.
+RDP_DOMAIN=""        # Imported variable.
+RDP_IP=""            # Imported variable.
+VM_NAME="RDPWindows" # Name of the Windows VM (FOR 'libvirt' ONLY).
+WAFLAVOR="docker"    # Imported variable.
+RDP_SCALE=100        # Imported variable.
+RDP_FLAGS=""         # Imported variable.
+DEBUG="true"         # Imported variable.
+FREERDP_COMMAND=""   # Imported variable.
+
+PORT_TIMEOUT=5      # Default port check timeout.
+RDP_TIMEOUT=30      # Default RDP connection test timeout.
+APP_SCAN_TIMEOUT=60 # Default application scan timeout.
 
 # PERMISSIONS AND DIRECTORIES
 SUDO=""         # Set to "sudo" if the user specifies '--system', or "" if the user specifies '--user'.
@@ -988,7 +990,7 @@ function waCheckPortOpen() {
     fi
 
     # Check for an open RDP port.
-    if ! timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
+    if ! timeout "$PORT_TIMEOUT" nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -1001,6 +1003,7 @@ function waCheckPortOpen() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo "Please ensure Remote Desktop is configured on Windows as per the WinApps README."
+        echo -e "Then you can try increasing the ${COMMAND_TEXT}PORT_TIMEOUT${CLEAR_TEXT} in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -1043,9 +1046,6 @@ function waCheckRDPAccess() {
         /p:"$RDP_PASS" \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
-        +home-drive \
-        -wallpaper \
-        +dynamic-resolution \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
@@ -1055,8 +1055,8 @@ function waCheckRDPAccess() {
     # Initialise the time counter.
     ELAPSED_TIME=0
 
-    # Wait a maximum of 30 seconds for the background process to complete.
-    while [ "$ELAPSED_TIME" -lt 30 ]; do
+    # Wait a maximum of $RDP_TIMEOUT seconds for the background process to complete.
+    while [ "$ELAPSED_TIME" -lt "$RDP_TIMEOUT" ]; do
         # Check if the FreeRDP process is complete or if the test file exists.
         if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then
             break
@@ -1091,6 +1091,7 @@ function waCheckRDPAccess() {
         echo "  - Ensure the user is logged out of Windows prior to initiating the WinApps installation."
         echo "  - Ensure the credentials within the WinApps configuration file are correct."
         echo -e "  - Utilise a new certificate by removing relevant certificate(s) in ${COMMAND_TEXT}${HOME}/.config/freerdp/server${CLEAR_TEXT}."
+        echo -e "  - Try increasing the ${COMMAND_TEXT}RDP_TIMEOUT${CLEAR_TEXT} in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
         echo "  - If using 'libvirt', ensure the Windows VM is correctly named as specified within the README."
         echo "  - If using 'libvirt', ensure 'Remote Desktop' is enabled within the Windows VM."
         echo "  - If using 'libvirt', ensure you have merged 'RDPApps.reg' into the Windows VM's registry."
@@ -1137,6 +1138,10 @@ function waFindInstalled() {
         # Extract the name of the application from the absolute path of the folder.
         APPLICATION="$(basename "$APPLICATION")"
 
+        if [[ "$APPLICATION" == "ms-office-protocol-handler.desktop" ]]; then
+            continue
+        fi
+
         # Source 'Info' File Containing:
         # - The Application Name          (FULL_NAME)
         # - The Shortcut Name             (NAME)
@@ -1172,9 +1177,6 @@ function waFindInstalled() {
         /p:"$RDP_PASS" \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
-        +home-drive \
-        -wallpaper \
-        +dynamic-resolution \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
@@ -1184,8 +1186,8 @@ function waFindInstalled() {
     # Initialise the time counter.
     ELAPSED_TIME=0
 
-    # Wait a maximum of 60 seconds for the batch script to finish running.
-    while [ $ELAPSED_TIME -lt 60 ]; do
+    # Wait a maximum of $APP_SCAN_TIMEOUT seconds for the batch script to finish running.
+    while [ $ELAPSED_TIME -lt "$APP_SCAN_TIMEOUT" ]; do
         # Check if the FreeRDP process is complete or if the 'installed' file exists.
         if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then
             break
@@ -1216,6 +1218,7 @@ function waFindInstalled() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo -e "Please view the log at ${COMMAND_TEXT}${FREERDP_LOG}${CLEAR_TEXT}."
+        echo -e "You can try increasing the ${COMMAND_TEXT}APP_SCAN_TIMEOUT${CLEAR_TEXT} in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -1320,9 +1323,9 @@ MimeType=${MIME_TYPES}"
 function waConfigureOfficiallySupported() {
     # Declare variables.
     local OSA_LIST=() # Stores a list of all officially supported applications installed on Windows.
+    local OFFICE_APPS=("access" "access-o365" "access-o365-x86" "access-x86" "adobe-cc" "acrobat9" "acrobat-x-pro" "aftereffects-cc" "audition-cc" "bridge-cc" "bridge-cc-x86" "bridge-cs6" "bridge-cs6-x86" "cmd" "dymo-connect" "excel" "excel-o365" "excel-o365-x86" "excel-x86" "excel-x86-2010" "explorer" "iexplorer" "illustrator-cc" "lightroom-cc" "linqpad8" "mirc" "mspaint" "onenote" "onenote-o365" "onenote-o365-x86" "onenote-x86" "outlook" "outlook-o365" "outlook-o365-x86" "powerpoint" "powerpoint-o365" "powerpoint-o365-x86" "powerpoint-x86" "publisher" "publisher-o365" "publisher-o365-x86" "publisher-x86" "project" "project-x86" "remarkable-desktop" "ssms20" "visual-studio-comm" "visual-studio-ent" "visual-studio-pro" "visio" "visio-x86" "word" "word-o365" "word-o365-x86" "word-x86" "word-x86-2010")
 
     # Read the list of officially supported applications that are installed on Windows into an array, returning an empty array if no such files exist.
-    # This will remove leading and trailing whitespace characters as well as ignore empty lines.
     readarray -t OSA_LIST < <(grep -v '^[[:space:]]*$' "$INST_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' 2>/dev/null || true)
 
     # Create application entries for each officially supported application.
@@ -1335,6 +1338,19 @@ function waConfigureOfficiallySupported() {
 
         # Configure the application.
         waConfigureApp "$OSA" svg
+
+        # Check if the application is an Office app and copy the protocol handler.
+        if [[ " ${OFFICE_APPS[*]} " == *" $OSA "* ]]; then
+            # Determine the target directory based on whether the installation is for the system or user.
+            if [[ "$OPT_SYSTEM" -eq 1 ]]; then
+                TARGET_DIR="$SYS_APP_PATH"
+            else
+                TARGET_DIR="$USER_APP_PATH"
+            fi
+
+            # Copy the protocol handler to the appropriate directory.
+            $SUDO cp "./apps/ms-office-protocol-handler.desktop" "$TARGET_DIR/ms-office-protocol-handler.desktop"
+        fi
 
         # Print feedback.
         echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
@@ -1558,13 +1574,6 @@ function waInstall() {
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $MULTI_FLAG.
-    if [[ $MULTIMON == "true" ]]; then
-        MULTI_FLAG="/multimon"
-    else
-        MULTI_FLAG="+span"
-    fi
-
     # Update $RDP_SCALE.
     waFixScale
 
@@ -1667,9 +1676,20 @@ function waEnsureOnPath() {
 # Name: 'waUninstall'
 # Role: Uninstalls WinApps.
 function waUninstall() {
+
     # Print feedback.
     [ "$OPT_SYSTEM" -eq 1 ] && echo -e "${BOLD_TEXT}REMOVING SYSTEM INSTALLATION.${CLEAR_TEXT}"
     [ "$OPT_USER" -eq 1 ] && echo -e "${BOLD_TEXT}REMOVING USER INSTALLATION.${CLEAR_TEXT}"
+
+    # Determine the target directory for the protocol handler based on the installation type.
+    if [[ "$OPT_SYSTEM" -eq 1 ]]; then
+        TARGET_DIR="$SYS_APP_PATH"
+    else
+        TARGET_DIR="$USER_APP_PATH"
+    fi
+
+    # Remove the 'ms-office-protocol-handler.desktop' file if it exists.
+    $SUDO rm -f "$TARGET_DIR/ms-office-protocol-handler.desktop"
 
     # Declare variables.
     local WINAPPS_DESKTOP_FILES=()    # Stores a list of '.desktop' file paths.

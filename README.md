@@ -17,6 +17,7 @@ WinApps works by:
 - The GNU/Linux `/home` directory is accessible within Windows via the `\\tsclient\home` mount.
 - Integration with `Nautilus`, allowing you to right-click files to open them with specific Windows applications based on the file MIME type.
 - The [official taskbar widget](https://github.com/winapps-org/WinApps-Launcher) enables seamless administration of the Windows subsystem and offers an easy way to launch Windows applications.
+- Microsoft Office links (e.g. ms-word://) from the host system are automatically opened in the Windows subsystem. (Note: You may need to use an [User Agent switcher](https://github.com/ray-lothian/UserAgent-Switcher/) Browser Extension and set the User-Agent to Windows, as as the Office webapps typically hide the "Open in Desktop App" option for Linux users.)
 
 ## Supported Applications
 **WinApps supports <u>*ALL*</u> Windows applications.**
@@ -311,7 +312,7 @@ Install the required dependencies.
       ```
   - Arch Linux:
       ```bash
-      sudo pacman -Syu --needed -y curl dialog freerdp git iproute2 libnotify gnu-netcat
+      sudo pacman -Syu --needed -y curl dialog freerdp git iproute2 libnotify openbsd-netcat
       ```
   - OpenSUSE:
       ```bash
@@ -364,6 +365,13 @@ RDP_DOMAIN=""
 # - 'libvirt': '' (BLANK)
 RDP_IP="127.0.0.1"
 
+# [VM NAME]
+# NOTES:
+# - Only applicable when using 'libvirt'
+# - The libvirt VM name must match so that WinApps can determine VM IP, start the VM, etc.
+# DEFAULT VALUE: 'RDPWindows'
+VM_NAME="RDPWindows"
+
 # [WINAPPS BACKEND]
 # DEFAULT VALUE: 'docker'
 # VALID VALUES:
@@ -396,18 +404,9 @@ REMOVABLE_MEDIA="/run/media"
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
 # NOTES:
 # - You can try adding /network:lan to these flags in order to increase performance, however, some users have faced issues with this.
-# DEFAULT VALUE: '/cert:tofu /sound /microphone'
+# DEFAULT VALUE: '/cert:tofu /sound /microphone +home-drive'
 # VALID VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
-RDP_FLAGS="/cert:tofu /sound /microphone"
-
-# [MULTIPLE MONITORS]
-# NOTES:
-# - If enabled, a FreeRDP bug *might* produce a black screen.
-# DEFAULT VALUE: 'false'
-# VALID VALUES:
-# - 'true'
-# - 'false'
-MULTIMON="false"
+RDP_FLAGS="/cert:tofu /sound /microphone +home-drive"
 
 # [DEBUG WINAPPS]
 # NOTES:
@@ -445,6 +444,31 @@ AUTOPAUSE_TIME="300"
 # DEFAULT VALUE: '' (BLANK)
 # VALID VALUES: The command required to run FreeRDPv3 on your system (e.g., 'xfreerdp', 'xfreerdp3', etc.).
 FREERDP_COMMAND=""
+
+# [TIMEOUTS]
+# NOTES:
+# - These settings control various timeout durations within the WinApps setup.
+# - Increasing the timeouts is only necessary if the corresponding errors occur.
+# - Ensure you have followed all the Troubleshooting Tips in the error message first.
+
+# PORT CHECK
+# - The maximum time (in seconds) to wait when checking if the RDP port on Windows is open.
+# - Corresponding error: "NETWORK CONFIGURATION ERROR" (exit status 13).
+# DEFAULT VALUE: '5'
+PORT_TIMEOUT="5"
+
+# RDP CONNECTION TEST
+# - The maximum time (in seconds) to wait when testing the initial RDP connection to Windows.
+# - Corresponding error: "REMOTE DESKTOP PROTOCOL FAILURE" (exit status 14).
+# DEFAULT VALUE: '30'
+RDP_TIMEOUT="30"
+
+# APPLICATION SCAN
+# - The maximum time (in seconds) to wait for the script that scans for installed applications on Windows to complete.
+# - Corresponding error: "APPLICATION QUERY FAILURE" (exit status 15).
+# DEFAULT VALUE: '60'
+APP_SCAN_TIMEOUT="60"
+
 ```
 
 > [!IMPORTANT]
@@ -459,7 +483,7 @@ FREERDP_COMMAND=""
 - For domain users, you can uncomment and change `RDP_DOMAIN`.
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
 - To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
-- For multi-monitor setups, you can try enabling `MULTIMON`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
+- For multi-monitor setups, you can try adding `/multimon` to `RDP_FLAGS`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 - If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
 
